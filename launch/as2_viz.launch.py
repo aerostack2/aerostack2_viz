@@ -51,7 +51,7 @@ def generate_launch_description():
         'as2_ign_gazebo_assets'),
         'models', 'quadrotor_base', 'quadrotor_base_viz.sdf')
 
-    with open(sdf_file, 'r') as infp:
+    with open(sdf_file, 'r', encoding='utf-8') as infp:
         robot_desc = infp.read()
 
     robot_state_publisher = Node(
@@ -69,14 +69,24 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         arguments=[
-            '-d', os.path.join(get_package_share_directory('as2_viz'), 'config', 'as2_default.rviz')],
+            '-d', os.path.join(get_package_share_directory('as2_viz'),
+                               'config', 'as2_default.rviz')],
         condition=IfCondition(LaunchConfiguration('rviz'))
+    )
+
+    viz = Node(
+        package='as2_viz',
+        executable='viz',
+        condition=IfCondition(LaunchConfiguration('pose'))
     )
 
     return LaunchDescription([
         # Launch Arguments
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
+        DeclareLaunchArgument('pose', default_value='true',
+                              description='Paint pose.'),
         robot_state_publisher,
-        rviz
+        rviz,
+        viz
     ])

@@ -32,6 +32,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'viz = as2_viz.viz:main',
         ],
     },
 )
