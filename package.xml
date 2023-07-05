@@ -3,9 +3,13 @@
 <package format="3">
   <name>as2_viz</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="pedro.ariasp@upm.es">parias</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Aerostack2 Visualization Tools</description>
+  <maintainer email="cvar.upm3@gmail.com">CVAR-UPM</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <depend>ros_gz</depend>
+  <depend>sdformat_urdf</depend>
+  <depend>robot_state_publisher</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
