@@ -16,7 +16,6 @@ class MarkerPublisherNode(Node):
     """ A ROS node to publish markers for visualization in RViz """
     MARKERS_FREQ = 0.1
     MARKERS_LIFETIME = 5  # seconds
-    RECORD_LENGTH = 200
 
     def __init__(self) -> None:
         """ Initialize the node """
@@ -25,6 +24,14 @@ class MarkerPublisherNode(Node):
         self.declare_parameter("namespace", 'drone0')
         self.namespace = self.get_parameter(
             "namespace").get_parameter_value().string_value
+
+        self.declare_parameter("color", 'green')
+        color = self.get_parameter(
+            "color").get_parameter_value().string_value
+
+        self.declare_parameter("record_length", 500)
+        record_length = self.get_parameter(
+            "record_length").get_parameter_value().integer_value
 
         self.get_logger().info(f"Using drone namespace: {self.namespace}")
 
@@ -39,18 +46,28 @@ class MarkerPublisherNode(Node):
             self.ref_pose_callback, qos_profile_system_default)
 
         self.marker_pub = self.create_publisher(
-            Marker, 'viz/reference_pose', qos_profile_system_default
+            Marker, f'/viz/{self.namespace}/reference_pose', qos_profile_system_default
         )
         self.vel_pub = self.create_publisher(
-            Marker, 'viz/vel', qos_profile_system_default
+            Marker, f'/viz/{self.namespace}/vel', qos_profile_system_default
         )
         # TODO: change to Marker.LINE_LIST
         self.traj_pub = self.create_publisher(
-            Path, 'viz/last_poses', qos_profile_system_default
+            Path, f'/viz/{self.namespace}/last_poses', qos_profile_system_default
         )
 
-        self.poses_record: deque[PoseStamped] = deque(maxlen=200)
+        self.poses_record: deque[PoseStamped] = deque(
+            maxlen=record_length)
 
+        match color:
+            case 'red':
+                r, g, b = 1.0, 0.0, 0.0
+            case 'green':
+                r, g, b = 0.0, 1.0, 0.0
+            case 'blue':
+                r, g, b = 0.0, 0.0, 1.0
+            case _:
+                r, g, b = 1.0, 0.0, 0.0
         self.marker = Marker()
         self.marker.ns = 'am'
         self.marker.id = 33
@@ -60,7 +77,9 @@ class MarkerPublisherNode(Node):
         self.marker.scale.x = 0.1
         self.marker.scale.y = 0.1
         self.marker.scale.z = 0.1
-        self.marker.color.g = 1.0
+        self.marker.color.r = r
+        self.marker.color.g = g
+        self.marker.color.b = b
         self.marker.color.a = 1.0
 
         self.timer = self.create_timer(self.MARKERS_FREQ, self.publish_markers)

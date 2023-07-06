@@ -58,6 +58,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
+        namespace=LaunchConfiguration('namespace'),
         parameters=[
             {'use_sim_time': True},
             {'robot_description': robot_desc}
@@ -69,20 +70,26 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         arguments=[
-            '-d', os.path.join(get_package_share_directory('as2_viz'),
-                               'config', 'as2_default.rviz')],
+            '-d', LaunchConfiguration('rviz_config')],
         condition=IfCondition(LaunchConfiguration('rviz'))
     )
 
+    # Visualization markers
     viz = Node(
         package='as2_viz',
         executable='viz',
+        namespace=LaunchConfiguration('namespace'),
         parameters=[
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
-            {'namespace': LaunchConfiguration('namespace')}
+            {'namespace': LaunchConfiguration('namespace')},
+            {'color': LaunchConfiguration('color')},
+            {'record_length': LaunchConfiguration('record_length')}
         ],
-        condition=IfCondition(LaunchConfiguration('pose'))
+        condition=IfCondition(LaunchConfiguration('paint_markers'))
     )
+
+    default_rviz_config = os.path.join(get_package_share_directory('as2_viz'),
+                                       'config', 'as2_default.rviz')
 
     return LaunchDescription([
         # Launch Arguments
@@ -91,8 +98,14 @@ def generate_launch_description():
                               description='Use simulation time'),
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
-        DeclareLaunchArgument('pose', default_value='true',
+        DeclareLaunchArgument('rviz_config', default_value=default_rviz_config,
+                              description='RViz configuration file.'),
+        DeclareLaunchArgument('paint_markers', default_value='true',
                               description='Paint pose.'),
+        DeclareLaunchArgument('color', default_value='green',
+                              description='Color for reference pose marker.'),
+        DeclareLaunchArgument('record_length', default_value='500',
+                              description='Length for last poses.'),
         robot_state_publisher,
         rviz,
         viz
