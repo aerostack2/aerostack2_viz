@@ -4,7 +4,6 @@ from collections import deque
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from visualization_msgs.msg import Marker
-from rclpy.parameter import Parameter
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
 import rclpy
@@ -19,22 +18,24 @@ class MarkerPublisherNode(Node):
     MARKERS_LIFETIME = 5  # seconds
     RECORD_LENGTH = 200
 
-    def __init__(self, namespace: str, use_sim_time: bool = False) -> None:
+    def __init__(self) -> None:
         """ Initialize the node """
         super().__init__('marker_publisher_node')
 
-        self.param_use_sim_time = Parameter(
-            'use_sim_time', Parameter.Type.BOOL, use_sim_time)
-        self.set_parameters([self.param_use_sim_time])
+        self.declare_parameter("namespace", 'drone0')
+        self.namespace = self.get_parameter(
+            "namespace").get_parameter_value().string_value
+
+        self.get_logger().info(f"Using drone namespace: {self.namespace}")
 
         self.pose_sub = self.create_subscription(
-            PoseStamped, f'/{namespace}/self_localization/pose',
+            PoseStamped, f'/{self.namespace}/self_localization/pose',
             self.pose_callback, qos_profile_system_default)
         self.twist_sub = self.create_subscription(
-            TwistStamped, f'/{namespace}/self_localization/twist',
+            TwistStamped, f'/{self.namespace}/self_localization/twist',
             self.twist_callback, qos_profile_system_default)
         self.pose_ref_sub = self.create_subscription(
-            PoseStamped, f'/{namespace}/motion_reference/pose',
+            PoseStamped, f'/{self.namespace}/motion_reference/pose',
             self.ref_pose_callback, qos_profile_system_default)
 
         self.marker_pub = self.create_publisher(
@@ -109,7 +110,7 @@ def main(args=None):
     """ Main function """
 
     rclpy.init(args=args)
-    marker_publisher_node = MarkerPublisherNode('drone0', True)
+    marker_publisher_node = MarkerPublisherNode()
     rclpy.spin(marker_publisher_node)
     marker_publisher_node.destroy_node()
     rclpy.shutdown()

@@ -77,11 +77,18 @@ def generate_launch_description():
     viz = Node(
         package='as2_viz',
         executable='viz',
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+            {'namespace': LaunchConfiguration('namespace')}
+        ],
         condition=IfCondition(LaunchConfiguration('pose'))
     )
 
     return LaunchDescription([
         # Launch Arguments
+        DeclareLaunchArgument('namespace', description='Drone namespace.'),
+        DeclareLaunchArgument('use_sim_time', default_value='true',
+                              description='Use simulation time'),
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         DeclareLaunchArgument('pose', default_value='true',
