@@ -33,6 +33,8 @@ setup(
     entry_points={
         'console_scripts': [
             'viz = as2_viz.viz:main',
+            'viz_rosbag_path = as2_viz.viz_rosbag_path:main',
+            'viz_model_dae = as2_viz.viz_model_dae:main',
         ],
     },
 )
