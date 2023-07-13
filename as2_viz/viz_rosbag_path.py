@@ -48,6 +48,14 @@ class RosbagPathPublisherNode(Node):
         self.marker = Marker()
         self.marker.type = Marker.LINE_STRIP
         self.marker.ns = "as2_viz"
+        
+        self.declare_parameter("marker.id", 0)
+        self.marker.id = self.get_parameter(
+            "marker.id").get_parameter_value().integer_value
+
+        self.declare_parameter("marker.frame_id", "")
+        self.marker.header.frame_id = self.get_parameter(
+            "marker.frame_id").get_parameter_value().string_value
 
         self.marker.color.a = 1.0
         self.declare_parameter("marker.color.r", 0.0)
@@ -75,9 +83,13 @@ class RosbagPathPublisherNode(Node):
         if self.marker.points is None:
             return
 
-        if frame_id is None:
-            frame_id = "earth"
-        self.marker.header.frame_id = frame_id
+        if self.marker.header.frame_id == "":
+            if frame_id is not None:
+                self.marker.header.frame_id = frame_id
+            else:
+                self.marker.header.frame_id = "earth"
+
+        self.get_logger().info(f"Using frame id : {self.marker.header.frame_id}")
 
         self.marker_pub = self.create_publisher(
             Marker, marker_topic_name, qos_profile_system_default
