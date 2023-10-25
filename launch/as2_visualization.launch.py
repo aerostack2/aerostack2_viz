@@ -1,5 +1,5 @@
 """
-as2_viz.launch.py
+as2_visualization.launch.py
 """
 
 # Copyright 2022 Universidad Politécnica de Madrid
@@ -76,8 +76,8 @@ def generate_launch_description():
 
     # Visualization markers
     viz = Node(
-        package='as2_viz',
-        executable='viz',
+        package='as2_visualization',
+        executable='marker_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
@@ -88,7 +88,7 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('paint_markers'))
     )
 
-    default_rviz_config = os.path.join(get_package_share_directory('as2_viz'),
+    default_rviz_config = os.path.join(get_package_share_directory('as2_visualization'),
                                        'config', 'as2_default.rviz')
 
     return LaunchDescription([

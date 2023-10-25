@@ -5,7 +5,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'as2_viz'
+package_name = 'as2_visualization'
 
 setup(
     name=package_name,
@@ -32,7 +32,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'viz = as2_viz.viz:main',
+            'viz = as2_visualization.marker_publisher:main',
         ],
     },
 )
