@@ -102,7 +102,7 @@ def generate_launch_description():
                               description='RViz configuration file.'),
         DeclareLaunchArgument('paint_markers', default_value='true',
                               description='Paint pose.'),
-        DeclareLaunchArgument('color', default_value='green',
+        DeclareLaunchArgument('color', default_value='green', choices=['red', 'green', 'blue'],
                               description='Color for reference pose marker.'),
         DeclareLaunchArgument('record_length', default_value='500',
                               description='Length for last poses.'),
