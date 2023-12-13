@@ -108,7 +108,7 @@ void TeleopPanel::takeoff() {
   arming_client_->async_send_request(request);
   offboard_client_->async_send_request(request);
 
-  auto goal_msg = as2_msgs::action::TakeOff::Goal();
+  auto goal_msg = as2_msgs::action::Takeoff::Goal();
   goal_msg.takeoff_height = 1.0;
   goal_msg.takeoff_speed = 1.0;
   RCLCPP_INFO(node_->get_logger(), "Taking off...");
@@ -194,7 +194,7 @@ void TeleopPanel::updateDroneNs() {
     offboard_client_ = node_->create_client<std_srvs::srv::SetBool>(
         drone_namespace_.toStdString() + "/" +
         as2_names::services::platform::set_offboard_mode);
-    takeoff_client_ = rclcpp_action::create_client<as2_msgs::action::TakeOff>(
+    takeoff_client_ = rclcpp_action::create_client<as2_msgs::action::Takeoff>(
         node_, drone_namespace_.toStdString() + "/" +
                    as2_names::actions::behaviors::takeoff);
     land_client_ = rclcpp_action::create_client<as2_msgs::action::Land>(
