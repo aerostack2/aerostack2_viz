@@ -88,6 +88,18 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('paint_markers'))
     )
 
+    # Visualization geozones
+    viz_geozones = Node(
+        package='as2_visualization',
+        executable='geozones_marker_publisher',
+        namespace=LaunchConfiguration('namespace'),
+        parameters=[
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+            {'namespace': LaunchConfiguration('namespace')}
+        ],
+        condition=IfCondition(LaunchConfiguration('paint_geozones'))
+    )
+
     default_rviz_config = os.path.join(get_package_share_directory('as2_visualization'),
                                        'config', 'as2_default.rviz')
 
@@ -104,9 +116,12 @@ def generate_launch_description():
                               description='Paint pose.'),
         DeclareLaunchArgument('color', default_value='green', choices=['red', 'green', 'blue'],
                               description='Color for reference pose marker.'),
+        DeclareLaunchArgument('paint_geozones', default_value='false', choices=['false', 'true'],
+                              description='Marker publisher subscribes to geofence topics.'),
         DeclareLaunchArgument('record_length', default_value='500',
                               description='Length for last poses.'),
         robot_state_publisher,
         rviz,
-        viz
+        viz,
+        viz_geozones
     ])
