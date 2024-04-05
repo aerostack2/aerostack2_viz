@@ -2,8 +2,8 @@
 
 from collections import deque
 from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped, TwistStamped
-from visualization_msgs.msg import Marker
+from geometry_msgs.msg import PoseStamped, TwistStamped, Point
+from visualization_msgs.msg import Marker, MarkerArray
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
 import rclpy
@@ -16,6 +16,7 @@ class MarkerPublisherNode(Node):
     """ A ROS node to publish markers for visualization in RViz """
     MARKERS_FREQ = 0.1
     MARKERS_LIFETIME = 5  # seconds
+    paint_geozones: bool = False
 
     def __init__(self) -> None:
         """ Initialize the node """
