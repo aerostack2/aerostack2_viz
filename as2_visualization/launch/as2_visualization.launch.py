@@ -48,7 +48,7 @@ def generate_launch_description():
     """Publish drone URDF
     """
     sdf_file = os.path.join(get_package_share_directory(
-        'as2_ign_gazebo_assets'),
+        'as2_gazebo_assets'),
         'models', 'quadrotor_base', 'quadrotor_base_viz.sdf')
 
     with open(sdf_file, 'r', encoding='utf-8') as infp:
