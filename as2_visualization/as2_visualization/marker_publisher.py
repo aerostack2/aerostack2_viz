@@ -5,7 +5,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from visualization_msgs.msg import Marker
 from rclpy.node import Node
-from rclpy.qos import qos_profile_system_default
+from rclpy.qos import qos_profile_system_default, qos_profile_sensor_data
 import rclpy
 from rclpy.duration import Duration
 
@@ -37,13 +37,13 @@ class MarkerPublisherNode(Node):
 
         self.pose_sub = self.create_subscription(
             PoseStamped, f'/{self.namespace}/self_localization/pose',
-            self.pose_callback, qos_profile_system_default)
+            self.pose_callback, qos_profile_sensor_data)
         self.twist_sub = self.create_subscription(
             TwistStamped, f'/{self.namespace}/self_localization/twist',
-            self.twist_callback, qos_profile_system_default)
+            self.twist_callback, qos_profile_sensor_data)
         self.pose_ref_sub = self.create_subscription(
             PoseStamped, f'/{self.namespace}/motion_reference/pose',
-            self.ref_pose_callback, qos_profile_system_default)
+            self.ref_pose_callback, qos_profile_sensor_data)
 
         self.marker_pub = self.create_publisher(
             Marker, f'/viz/{self.namespace}/reference_pose', qos_profile_system_default
