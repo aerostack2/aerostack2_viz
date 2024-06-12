@@ -32,7 +32,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'viz = as2_visualization.marker_publisher:main',
+            'marker_publisher = as2_visualization.marker_publisher:main',
         ],
     },
 )
