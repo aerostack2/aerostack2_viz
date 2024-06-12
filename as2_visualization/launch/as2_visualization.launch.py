@@ -2,7 +2,7 @@
 as2_visualization.launch.py
 """
 
-# Copyright 2022 Universidad Politécnica de Madrid
+# Copyright 2024 Universidad Politécnica de Madrid
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ as2_visualization.launch.py
 
 
 __authors__ = "Pedro Arias Pérez"
-__copyright__ = "Copyright (c) 2022 Universidad Politécnica de Madrid"
+__copyright__ = "Copyright (c) 2024 Universidad Politécnica de Madrid"
 __license__ = "BSD-3-Clause"
 
 import os
@@ -82,7 +82,6 @@ def generate_launch_description():
         parameters=[
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
             {'namespace': LaunchConfiguration('namespace')},
-            {'color': LaunchConfiguration('color')},
             {'record_length': LaunchConfiguration('record_length')}
         ],
         condition=IfCondition(LaunchConfiguration('paint_markers'))
@@ -112,10 +111,8 @@ def generate_launch_description():
                               description='Open RViz.'),
         DeclareLaunchArgument('rviz_config', default_value=default_rviz_config,
                               description='RViz configuration file.'),
-        DeclareLaunchArgument('paint_markers', default_value='true',
-                              description='Paint pose.'),
-        DeclareLaunchArgument('color', default_value='green', choices=['red', 'green', 'blue'],
-                              description='Color for reference pose marker.'),
+        DeclareLaunchArgument('paint_markers', default_value='true', choices=['false', 'true'],
+                              description='Publish markers to paint reference pose, vel and poses history.'),
         DeclareLaunchArgument('paint_geozones', default_value='false', choices=['false', 'true'],
                               description='Marker publisher subscribes to geofence topics.'),
         DeclareLaunchArgument('record_length', default_value='500',

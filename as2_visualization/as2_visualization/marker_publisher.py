@@ -1,7 +1,7 @@
 """ A ROS 2 node to publish markers for visualization in RViz """
 
+import random
 from collections import deque
-from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from visualization_msgs.msg import Marker
 from rclpy.node import Node
@@ -16,6 +16,7 @@ class MarkerPublisherNode(Node):
     """ A ROS node to publish markers for visualization in RViz """
     MARKERS_FREQ = 0.1
     MARKERS_LIFETIME = 5  # seconds
+    PATH_LIFETIME = 5  # seconds
 
     def __init__(self) -> None:
         """ Initialize the node """
@@ -24,10 +25,6 @@ class MarkerPublisherNode(Node):
         self.declare_parameter("namespace", 'drone0')
         self.namespace = self.get_parameter(
             "namespace").get_parameter_value().string_value
-
-        self.declare_parameter("color", 'green')
-        color = self.get_parameter(
-            "color").get_parameter_value().string_value
 
         self.declare_parameter("record_length", 500)
         record_length = self.get_parameter(
@@ -51,23 +48,14 @@ class MarkerPublisherNode(Node):
         self.vel_pub = self.create_publisher(
             Marker, f'/viz/{self.namespace}/vel', qos_profile_system_default
         )
-        # TODO: change to Marker.LINE_LIST
-        self.traj_pub = self.create_publisher(
-            Path, f'/viz/{self.namespace}/last_poses', qos_profile_system_default
+        self.path_pub = self.create_publisher(
+            Marker, f'/viz/{self.namespace}/last_poses', qos_profile_system_default
         )
 
         self.poses_record: deque[PoseStamped] = deque(
             maxlen=record_length)
 
-        match color:
-            case 'red':
-                r, g, b = 1.0, 0.0, 0.0
-            case 'green':
-                r, g, b = 0.0, 1.0, 0.0
-            case 'blue':
-                r, g, b = 0.0, 0.0, 1.0
-            case _:
-                r, g, b = 1.0, 0.0, 0.0
+        self.color = [random.random(), random.random(), random.random()]
         self.marker = Marker()
         self.marker.ns = 'am'
         self.marker.id = 33
@@ -77,10 +65,23 @@ class MarkerPublisherNode(Node):
         self.marker.scale.x = 0.1
         self.marker.scale.y = 0.1
         self.marker.scale.z = 0.1
-        self.marker.color.r = r
-        self.marker.color.g = g
-        self.marker.color.b = b
+        self.marker.color.r = self.color[0]
+        self.marker.color.g = self.color[1]
+        self.marker.color.b = self.color[2]
         self.marker.color.a = 1.0
+
+        self.path = Marker()
+        self.path.ns = 'am'
+        self.path.id = 34
+        self.path.type = Marker.POINTS
+        self.path.action = Marker.ADD
+        self.path.lifetime = Duration(seconds=self.PATH_LIFETIME).to_msg()
+        self.path.scale.x = 0.01
+        self.path.scale.y = 0.01
+        self.path.color.r = self.color[0]
+        self.path.color.g = self.color[1]
+        self.path.color.b = self.color[2]
+        self.path.color.a = 1.0
 
         self.timer = self.create_timer(self.MARKERS_FREQ, self.publish_markers)
 
@@ -94,7 +95,9 @@ class MarkerPublisherNode(Node):
         vel.scale.x = 0.1
         vel.scale.y = 0.1
         vel.scale.z = 0.1
-        vel.color.g = 1.0
+        vel.color.r = self.color[0]
+        vel.color.g = self.color[1]
+        vel.color.b = self.color[2]
         vel.color.a = 1.0
         vel.header = msg.header
         vel.pose.position.x = msg.twist.linear.x
@@ -118,11 +121,9 @@ class MarkerPublisherNode(Node):
         """ Publish the markers """
 
         if self.poses_record:
-            last_poses = Path()
-            last_poses.header = self.poses_record[0].header
-            last_poses.poses = list(self.poses_record)
-
-            self.traj_pub.publish(last_poses)
+            self.path.header = self.poses_record[0].header
+            self.path.points = [pose.pose.position for pose in self.poses_record]
+            self.path_pub.publish(self.path)
 
 
 def main(args=None):
