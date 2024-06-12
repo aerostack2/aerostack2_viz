@@ -45,14 +45,13 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    """Publish drone URDF
-    """
+    """Publish drone URDF."""
     sdf_file = os.path.join(get_package_share_directory(
         'as2_gazebo_assets'),
         'models', 'quadrotor_base', 'quadrotor_base_viz.sdf')
 
-    with open(sdf_file, 'r', encoding='utf-8') as infp:
-        robot_desc = infp.read()
+    with open(sdf_file, 'r', encoding='utf-8') as info:
+        robot_desc = info.read()
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -60,8 +59,8 @@ def generate_launch_description():
         name='robot_state_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': True},
-            {'robot_description': robot_desc}
+            {'use_sim_time': LaunchConfiguration('use_sim_time'),
+             'robot_description': robot_desc}
         ]
     )
 
@@ -75,14 +74,14 @@ def generate_launch_description():
     )
 
     # Visualization markers
-    viz = Node(
+    viz_markers = Node(
         package='as2_visualization',
         executable='marker_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-            {'namespace': LaunchConfiguration('namespace')},
-            {'record_length': LaunchConfiguration('record_length')}
+            {'use_sim_time': LaunchConfiguration('use_sim_time'),
+             'namespace': LaunchConfiguration('namespace'),
+             'record_length': LaunchConfiguration('record_length')}
         ],
         condition=IfCondition(LaunchConfiguration('paint_markers'))
     )
@@ -93,8 +92,8 @@ def generate_launch_description():
         executable='geozones_marker_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-            {'namespace': LaunchConfiguration('namespace')}
+            {'use_sim_time': LaunchConfiguration('use_sim_time'),
+             'namespace': LaunchConfiguration('namespace')}
         ],
         condition=IfCondition(LaunchConfiguration('paint_geozones'))
     )
@@ -119,6 +118,6 @@ def generate_launch_description():
                               description='Length for last poses.'),
         robot_state_publisher,
         rviz,
-        viz,
+        viz_markers,
         viz_geozones
     ])
