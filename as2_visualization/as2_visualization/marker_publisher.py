@@ -14,7 +14,7 @@ from rclpy.duration import Duration
 
 class MarkerPublisherNode(Node):
     """ A ROS node to publish markers for visualization in RViz """
-    MARKERS_FREQ = 0.1
+    MARKERS_PERIOD = 0.1 # seconds
     MARKERS_LIFETIME = 5  # seconds
     PATH_LIFETIME = 5  # seconds
 
@@ -83,7 +83,7 @@ class MarkerPublisherNode(Node):
         self.path.color.b = self.color[2]
         self.path.color.a = 1.0
 
-        self.timer = self.create_timer(self.MARKERS_FREQ, self.publish_markers)
+        self.timer = self.create_timer(self.MARKERS_PERIOD, self.publish_markers)
 
     def twist_callback(self, msg: TwistStamped) -> None:
         """Twist callback"""
@@ -119,7 +119,6 @@ class MarkerPublisherNode(Node):
 
     def publish_markers(self) -> None:
         """ Publish the markers """
-
         if self.poses_record:
             self.path.header = self.poses_record[0].header
             self.path.points = [pose.pose.position for pose in self.poses_record]

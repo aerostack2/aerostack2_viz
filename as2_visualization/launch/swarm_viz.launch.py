@@ -80,7 +80,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('namespace_list',
                               description='List of drone namespaces separated by commas. E.g: "drone0,drone1".'),
-        DeclareLaunchArgument('use_sim_time', default_value='true',
+        DeclareLaunchArgument('use_sim_time', default_value='false',
                               description='Use simulation time'),
         DeclareLaunchArgument('rviz_config', default_value=default_rviz_config,
                               description='RViz configuration file.'),
