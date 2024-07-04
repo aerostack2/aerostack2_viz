@@ -14,7 +14,7 @@ from rclpy.duration import Duration
 
 class MarkerPublisherNode(Node):
     """ A ROS node to publish markers for visualization in RViz """
-    MARKERS_PERIOD = 0.5 # seconds
+    MARKERS_PERIOD = 0.1 # seconds
     MARKERS_LIFETIME = 5  # seconds
     PATH_LIFETIME = 5  # seconds
 
