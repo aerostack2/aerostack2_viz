@@ -1,46 +1,60 @@
-""" A ROS 2 node to publish markers for visualization in RViz """
+"""A ROS 2 node to publish markers for visualization in RViz."""
 
-import random
 from collections import deque
+import random
+
 from geometry_msgs.msg import PoseStamped, TwistStamped
-from visualization_msgs.msg import Marker
-from rclpy.node import Node
-from rclpy.qos import qos_profile_system_default, qos_profile_sensor_data
 import rclpy
 from rclpy.duration import Duration
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
+from visualization_msgs.msg import Marker
+
 
 # TODO: choose btter names
 
 
 class MarkerPublisherNode(Node):
-    """ A ROS node to publish markers for visualization in RViz """
-    MARKERS_PERIOD = 0.1 # seconds
+    """A ROS node to publish markers for visualization in RViz."""
+
+    MARKERS_PERIOD = 0.1  # seconds
     MARKERS_LIFETIME = 5  # seconds
     PATH_LIFETIME = 5  # seconds
 
     def __init__(self) -> None:
-        """ Initialize the node """
+        """Initialize the node."""
         super().__init__('marker_publisher_node')
 
-        self.declare_parameter("namespace", 'drone0')
-        self.namespace = self.get_parameter(
-            "namespace").get_parameter_value().string_value
+        self.declare_parameter('namespace', 'drone0')
+        self.namespace = (
+            self.get_parameter('namespace').get_parameter_value().string_value
+        )
 
-        self.declare_parameter("record_length", 500)
-        record_length = self.get_parameter(
-            "record_length").get_parameter_value().integer_value
+        self.declare_parameter('record_length', 500)
+        record_length = (
+            self.get_parameter('record_length').get_parameter_value().integer_value
+        )
 
-        self.get_logger().info(f"Using drone namespace: {self.namespace}")
+        self.get_logger().info(f'Using drone namespace: {self.namespace}')
 
         self.pose_sub = self.create_subscription(
-            PoseStamped, f'/{self.namespace}/self_localization/pose',
-            self.pose_callback, qos_profile_sensor_data)
+            PoseStamped,
+            f'/{self.namespace}/self_localization/pose',
+            self.pose_callback,
+            qos_profile_sensor_data,
+        )
         self.twist_sub = self.create_subscription(
-            TwistStamped, f'/{self.namespace}/self_localization/twist',
-            self.twist_callback, qos_profile_sensor_data)
+            TwistStamped,
+            f'/{self.namespace}/self_localization/twist',
+            self.twist_callback,
+            qos_profile_sensor_data,
+        )
         self.pose_ref_sub = self.create_subscription(
-            PoseStamped, f'/{self.namespace}/motion_reference/pose',
-            self.ref_pose_callback, qos_profile_sensor_data)
+            PoseStamped,
+            f'/{self.namespace}/motion_reference/pose',
+            self.ref_pose_callback,
+            qos_profile_sensor_data,
+        )
 
         self.marker_pub = self.create_publisher(
             Marker, f'/viz/{self.namespace}/reference_pose', qos_profile_system_default
@@ -52,8 +66,7 @@ class MarkerPublisherNode(Node):
             Marker, f'/viz/{self.namespace}/last_poses', qos_profile_system_default
         )
 
-        self.poses_record: deque[PoseStamped] = deque(
-            maxlen=record_length)
+        self.poses_record: deque[PoseStamped] = deque(maxlen=record_length)
 
         self.color = [random.random(), random.random(), random.random()]
         self.marker = Marker()
@@ -86,7 +99,7 @@ class MarkerPublisherNode(Node):
         self.timer = self.create_timer(self.MARKERS_PERIOD, self.publish_markers)
 
     def twist_callback(self, msg: TwistStamped) -> None:
-        """Twist callback"""
+        """Twist callback."""
         vel = Marker()
 
         vel.type = Marker.ARROW
@@ -107,18 +120,18 @@ class MarkerPublisherNode(Node):
         self.vel_pub.publish(vel)
 
     def pose_callback(self, msg: PoseStamped) -> None:
-        """Pose callback"""
+        """Pose callback."""
         self.poses_record.append(msg)
 
     def ref_pose_callback(self, msg: PoseStamped) -> None:
-        """Motion reference pose callback"""
+        """Motion reference pose callback."""
         self.marker.header = msg.header
         self.marker.pose = msg.pose
 
         self.marker_pub.publish(self.marker)
 
     def publish_markers(self) -> None:
-        """ Publish the markers """
+        """Publish the markers."""
         if self.poses_record:
             self.path.header = self.poses_record[0].header
             self.path.points = [pose.pose.position for pose in self.poses_record]
@@ -126,8 +139,7 @@ class MarkerPublisherNode(Node):
 
 
 def main(args=None):
-    """ Main function """
-
+    """Entry point."""
     rclpy.init(args=args)
     marker_publisher_node = MarkerPublisherNode()
     rclpy.spin(marker_publisher_node)

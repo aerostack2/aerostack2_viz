@@ -42,20 +42,23 @@
 
 #include "pluginlib/class_list_macros.hpp"
 
-namespace as2_rviz_plugins {
+namespace as2_rviz_plugins
+{
 
 // We start with the constructor, doing the standard Qt thing of
 // passing the optional *parent* argument on to the superclass
 // constructor, and also zero-ing the velocities we will be
 // publishing.
-TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
-  QHBoxLayout *drone_layout = new QHBoxLayout;
+TeleopPanel::TeleopPanel(QWidget * parent)
+: rviz_common::Panel(parent)
+{
+  QHBoxLayout * drone_layout = new QHBoxLayout;
   drone_layout->addWidget(new QLabel("Drone ns:"));
   drone_editor_ = new QLineEdit;
   drone_layout->addWidget(drone_editor_);
 
   // Lay out the topic field above the control widget.
-  QVBoxLayout *layout = new QVBoxLayout;
+  QVBoxLayout * layout = new QVBoxLayout;
   layout->addLayout(drone_layout);
   takeoff_button_ = new QPushButton("Takeoff");
   land_button_ = new QPushButton("Land");
@@ -68,8 +71,9 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   setLayout(layout);
 
   // Next we make signal/slot connections.
-  connect(drone_editor_, SIGNAL(editingFinished()), this,
-          SLOT(updateDroneNs()));
+  connect(
+    drone_editor_, SIGNAL(editingFinished()), this,
+    SLOT(updateDroneNs()));
   connect(takeoff_button_, SIGNAL(clicked()), this, SLOT(takeoff()));
   connect(land_button_, SIGNAL(clicked()), this, SLOT(land()));
   connect(hover_button_, SIGNAL(clicked()), this, SLOT(hover()));
@@ -82,24 +86,28 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   node2_ = std::make_shared<rclcpp::Node>("teleop_panel_node2");
 }
 
-// TODO: takeoff may be started before services finished which will cause
+// TODO(pariaspe): takeoff may be started before services finished which will cause
 // takeoff failures. Clicking twice will make the drone takeoff
-void TeleopPanel::takeoff() {
+void TeleopPanel::takeoff()
+{
   if (!arming_client_->wait_for_service(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Arming service not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Arming service not available after waiting");
     return;
   }
 
   if (!offboard_client_->wait_for_service(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Offboard service not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Offboard service not available after waiting");
     return;
   }
 
   if (!takeoff_client_->wait_for_action_server(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Action server not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Action server not available after waiting");
     return;
   }
 
@@ -115,16 +123,18 @@ void TeleopPanel::takeoff() {
   takeoff_client_->async_send_goal(goal_msg);
 }
 
-void TeleopPanel::land() {
+void TeleopPanel::land()
+{
   if (!land_client_->wait_for_action_server(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Action server not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Action server not available after waiting");
     return;
   }
 
   auto goal_options =
-      rclcpp_action::Client<as2_msgs::action::Land>::SendGoalOptions();
-  // TODO: not building
+    rclcpp_action::Client<as2_msgs::action::Land>::SendGoalOptions();
+  // TODO(pariaspe): not building
   // goal_options.result_callback =
   //     std::bind(&TeleopPanel::disarm, node2_, std::placeholders::_1);
 
@@ -135,22 +145,25 @@ void TeleopPanel::land() {
 }
 
 void TeleopPanel::disarm(
-    const rclcpp_action::ClientGoalHandle<as2_msgs::action::Land>::WrappedResult
-        &result) {
+  const rclcpp_action::ClientGoalHandle<as2_msgs::action::Land>::WrappedResult
+  & result)
+{
   if (result.code != rclcpp_action::ResultCode::SUCCEEDED) {
     RCLCPP_ERROR(node_->get_logger(), "Landing failed");
     return;
   }
 
   if (!offboard_client_->wait_for_service(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Offboard service not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Offboard service not available after waiting");
     return;
   }
 
   if (!arming_client_->wait_for_service(std::chrono::seconds(2))) {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Arming service not available after waiting");
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Arming service not available after waiting");
     return;
   }
   auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
@@ -159,9 +172,10 @@ void TeleopPanel::disarm(
   arming_client_->async_send_request(request);
 }
 
-void TeleopPanel::hover() { hover_handler_->sendHover(); }
+void TeleopPanel::hover() {hover_handler_->sendHover();}
 
-void TeleopPanel::kill() {
+void TeleopPanel::kill()
+{
   auto alert_msg = as2_msgs::msg::AlertEvent();
   alert_msg.alert = as2_msgs::msg::AlertEvent::KILL_SWITCH;
   alert_msg.description = "Manual kill from rviz_teleop_plugin";
@@ -171,7 +185,8 @@ void TeleopPanel::kill() {
 // This is connected to QLineEdit::editingFinished() which
 // fires when the user presses Enter or Tab or otherwise moves focus
 // away.
-void TeleopPanel::updateDroneNs() {
+void TeleopPanel::updateDroneNs()
+{
   QString new_ns = drone_editor_->text();
   // Only take action if the name has changed.
   if (new_ns != drone_namespace_) {
@@ -189,25 +204,25 @@ void TeleopPanel::updateDroneNs() {
     }
 
     arming_client_ = node_->create_client<std_srvs::srv::SetBool>(
-        drone_namespace_.toStdString() + "/" +
-        as2_names::services::platform::set_arming_state);
+      drone_namespace_.toStdString() + "/" +
+      as2_names::services::platform::set_arming_state);
     offboard_client_ = node_->create_client<std_srvs::srv::SetBool>(
-        drone_namespace_.toStdString() + "/" +
-        as2_names::services::platform::set_offboard_mode);
+      drone_namespace_.toStdString() + "/" +
+      as2_names::services::platform::set_offboard_mode);
     takeoff_client_ = rclcpp_action::create_client<as2_msgs::action::Takeoff>(
-        node_, drone_namespace_.toStdString() + "/" +
-                   as2_names::actions::behaviors::takeoff);
+      node_, drone_namespace_.toStdString() + "/" +
+      as2_names::actions::behaviors::takeoff);
     land_client_ = rclcpp_action::create_client<as2_msgs::action::Land>(
-        node_, drone_namespace_.toStdString() + "/" +
-                   as2_names::actions::behaviors::land);
+      node_, drone_namespace_.toStdString() + "/" +
+      as2_names::actions::behaviors::land);
     alert_pub_ = node_->create_publisher<as2_msgs::msg::AlertEvent>(
-        drone_namespace_.toStdString() + "/" +
-            as2_names::topics::global::alert_event,
-        as2_names::topics::global::qos);
+      drone_namespace_.toStdString() + "/" +
+      as2_names::topics::global::alert_event,
+      as2_names::topics::global::qos);
     hover_handler_ =
-        std::make_shared<as2::motionReferenceHandlers::HoverMotion>(
-            node_.get(),
-            drone_namespace_.toStdString()); // Be careful, from shared_ptr to
+      std::make_shared<as2::motionReferenceHandlers::HoverMotion>(
+      node_.get(),
+      drone_namespace_.toStdString());       // Be careful, from shared_ptr to
                                              // ptr, what happens when the
                                              // shared_ptr is destroyed? BUM!
 
@@ -226,13 +241,15 @@ void TeleopPanel::updateDroneNs() {
 // Save all configuration data from this panel to the given
 // Config object.  It is important here that you call save()
 // on the parent class so the class id and panel name get saved.
-void TeleopPanel::save(rviz_common::Config config) const {
+void TeleopPanel::save(rviz_common::Config config) const
+{
   rviz_common::Panel::save(config);
   config.mapSetValue("drone_ns", drone_namespace_);
 }
 
 // Load all configuration data for this panel from the given Config object.
-void TeleopPanel::load(const rviz_common::Config &config) {
+void TeleopPanel::load(const rviz_common::Config & config)
+{
   rviz_common::Panel::load(config);
   QString ns;
   if (config.mapGetString("drone_ns", &ns)) {
@@ -241,7 +258,7 @@ void TeleopPanel::load(const rviz_common::Config &config) {
   }
 }
 
-} // namespace as2_rviz_plugins
+}  // namespace as2_rviz_plugins
 
 // Tell pluginlib about this class.  Every class which should be
 // loadable by pluginlib::ClassLoader must have these two lines

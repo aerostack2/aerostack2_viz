@@ -1,35 +1,39 @@
-from rclpy.node import Node
-from visualization_msgs.msg import Marker, MarkerArray
-from rclpy.duration import Duration
-from geozones.msg import Polygonlist
+"""A ROS 2 node to publish markers for geofence visualization in RViz."""
+
+from as2_msgs.msg import PolygonList
 from geometry_msgs.msg import Point
+from rclpy.duration import Duration
+from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
+from visualization_msgs.msg import Marker, MarkerArray
 
 
 class GeozonesMarkerPublisherNode(Node):
+    """Geozones main class."""
+
     MARKERS_FREQ = 0.1
     MARKERS_LIFETIME = 5  # seconds
 
     def __init__(self) -> None:
         super().__init__('geozones_marker_publisher_node')
 
-        self.declare_parameter("namespace", 'drone0')
-        self.namespace = self.get_parameter(
-            "namespace").get_parameter_value().string_value
+        self.declare_parameter('namespace', 'drone0')
+        self.namespace = (
+            self.get_parameter('namespace').get_parameter_value().string_value
+        )
 
-        self.declare_parameter("color", 'green')
-        self.color = self.get_parameter(
-            "color").get_parameter_value().string_value
+        self.declare_parameter('color', 'green')
+        self.color = self.get_parameter('color').get_parameter_value().string_value
 
         self.geozones_sub = self.create_subscription(
-            Polygonlist, f'/{self.namespace}/geozones_rviz',
-            self.geofence_callback, 1)
+            PolygonList, f'/{self.namespace}/geozones_rviz', self.geofence_callback, 1
+        )
         self.geozones_pub = self.create_publisher(
-            MarkerArray, f'/viz/{self.namespace}/geofences', qos_profile_system_default)
+            MarkerArray, f'/viz/{self.namespace}/geofences', qos_profile_system_default
+        )
 
-    def geofence_callback(self, msg: Polygonlist) -> None:
-        """ Geofence callback """
-
+    def geofence_callback(self, msg: PolygonList) -> None:
+        """Geofence callback."""
         match self.color:
             case 'red':
                 r, g, b = 1.0, 0.0, 0.0

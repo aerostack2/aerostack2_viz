@@ -1,6 +1,5 @@
-"""
-as2_visualization.launch.py
-"""
+"""as2_visualization.launch.py."""
+
 
 # Copyright 2024 Universidad Politécnica de Madrid
 #
@@ -18,7 +17,7 @@ as2_visualization.launch.py
 #      contributors may be used to endorse or promote products derived from
 #      this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS'
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 # ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
@@ -31,24 +30,28 @@ as2_visualization.launch.py
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-__authors__ = "Pedro Arias Pérez"
-__copyright__ = "Copyright (c) 2024 Universidad Politécnica de Madrid"
-__license__ = "BSD-3-Clause"
+__authors__ = 'Pedro Arias Pérez'
+__copyright__ = 'Copyright (c) 2024 Universidad Politécnica de Madrid'
+__license__ = 'BSD-3-Clause'
 
 import os
+
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
     """Publish drone URDF."""
-    sdf_file = os.path.join(get_package_share_directory(
-        'as2_gazebo_assets'),
-        'models', 'quadrotor_base', 'quadrotor_base_viz.sdf')
+    sdf_file = os.path.join(
+        get_package_share_directory('as2_gazebo_assets'),
+        'models',
+        'quadrotor_base',
+        'quadrotor_base_viz.sdf',
+    )
 
     with open(sdf_file, 'r', encoding='utf-8') as info:
         robot_desc = info.read()
@@ -59,18 +62,19 @@ def generate_launch_description():
         name='robot_state_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time'),
-             'robot_description': robot_desc}
-        ]
+            {
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
+                'robot_description': robot_desc,
+            }
+        ],
     )
 
     # RViz
     rviz = Node(
         package='rviz2',
         executable='rviz2',
-        arguments=[
-            '-d', LaunchConfiguration('rviz_config')],
-        condition=IfCondition(LaunchConfiguration('rviz'))
+        arguments=['-d', LaunchConfiguration('rviz_config')],
+        condition=IfCondition(LaunchConfiguration('rviz')),
     )
 
     # Visualization markers
@@ -79,11 +83,13 @@ def generate_launch_description():
         executable='marker_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time'),
-             'namespace': LaunchConfiguration('namespace'),
-             'record_length': LaunchConfiguration('record_length')}
+            {
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
+                'namespace': LaunchConfiguration('namespace'),
+                'record_length': LaunchConfiguration('record_length'),
+            }
         ],
-        condition=IfCondition(LaunchConfiguration('paint_markers'))
+        condition=IfCondition(LaunchConfiguration('paint_markers')),
     )
 
     # Visualization geozones
@@ -92,32 +98,53 @@ def generate_launch_description():
         executable='geozones_marker_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[
-            {'use_sim_time': LaunchConfiguration('use_sim_time'),
-             'namespace': LaunchConfiguration('namespace')}
+            {
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
+                'namespace': LaunchConfiguration('namespace'),
+            }
         ],
-        condition=IfCondition(LaunchConfiguration('paint_geozones'))
+        condition=IfCondition(LaunchConfiguration('paint_geozones')),
     )
 
-    default_rviz_config = os.path.join(get_package_share_directory('as2_visualization'),
-                                       'config', 'as2_default.rviz')
+    default_rviz_config = os.path.join(
+        get_package_share_directory('as2_visualization'), 'config', 'as2_default.rviz'
+    )
 
-    return LaunchDescription([
-        # Launch Arguments
-        DeclareLaunchArgument('namespace', description='Drone namespace.'),
-        DeclareLaunchArgument('use_sim_time', default_value='false',
-                              description='Use simulation time'),
-        DeclareLaunchArgument('rviz', default_value='true',
-                              description='Open RViz.'),
-        DeclareLaunchArgument('rviz_config', default_value=default_rviz_config,
-                              description='RViz configuration file.'),
-        DeclareLaunchArgument('paint_markers', default_value='true', choices=['false', 'true'],
-                              description='Publish markers to paint reference pose, vel and poses history.'),
-        DeclareLaunchArgument('paint_geozones', default_value='false', choices=['false', 'true'],
-                              description='Marker publisher subscribes to geofence topics.'),
-        DeclareLaunchArgument('record_length', default_value='500',
-                              description='Length for last poses.'),
-        robot_state_publisher,
-        rviz,
-        viz_markers,
-        viz_geozones
-    ])
+    return LaunchDescription(
+        [
+            # Launch Arguments
+            DeclareLaunchArgument('namespace', description='Drone namespace.'),
+            DeclareLaunchArgument(
+                'use_sim_time', default_value='false', description='Use simulation time'
+            ),
+            DeclareLaunchArgument(
+                'rviz', default_value='true', description='Open RViz.'
+            ),
+            DeclareLaunchArgument(
+                'rviz_config',
+                default_value=default_rviz_config,
+                description='RViz configuration file.',
+            ),
+            DeclareLaunchArgument(
+                'paint_markers',
+                default_value='true',
+                choices=['false', 'true'],
+                description='Publish markers to paint reference pose, vel and poses history.',
+            ),
+            DeclareLaunchArgument(
+                'paint_geozones',
+                default_value='false',
+                choices=['false', 'true'],
+                description='Marker publisher subscribes to geofence topics.',
+            ),
+            DeclareLaunchArgument(
+                'record_length',
+                default_value='500',
+                description='Length for last poses.',
+            ),
+            robot_state_publisher,
+            rviz,
+            viz_markers,
+            viz_geozones,
+        ]
+    )

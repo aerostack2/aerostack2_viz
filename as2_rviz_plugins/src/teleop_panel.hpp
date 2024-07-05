@@ -53,12 +53,14 @@
 class QLineEdit;
 class QPushButton;
 
-namespace as2_rviz_plugins {
+namespace as2_rviz_plugins
+{
 
 // Here we declare our new subclass of rviz_common::Panel.  Every panel which
 // can be added via the Panels/Add_New_Panel menu is a subclass of
 // rviz_common::Panel.
-class TeleopPanel : public rviz_common::Panel {
+class TeleopPanel : public rviz_common::Panel
+{
   // This class uses Qt slots and is a subclass of QObject, so it needs
   // the Q_OBJECT macro.
   Q_OBJECT
@@ -71,19 +73,20 @@ public:
   // a default of 0 lets the default constructor work and also lets
   // someone using the class for something else to pass in a parent
   // widget as they normally would with Qt.
-  explicit TeleopPanel(QWidget *parent = 0);
+  explicit TeleopPanel(QWidget * parent = 0);
 
   // Now we declare overrides of rviz_common::Panel functions for saving and
   // loading data from the config file.  Here the data is the
   // topic name.
-  virtual void load(const rviz_common::Config &config);
+  virtual void load(const rviz_common::Config & config);
   virtual void save(rviz_common::Config config) const;
 
 public Q_SLOTS:
   void takeoff();
   void land();
-  void disarm(const rclcpp_action::ClientGoalHandle<
-              as2_msgs::action::Land>::WrappedResult &result);
+  void disarm(
+    const rclcpp_action::ClientGoalHandle<
+      as2_msgs::action::Land>::WrappedResult & result);
   void hover();
   void kill();
 
@@ -94,11 +97,11 @@ public Q_SLOTS:
   void updateDroneNs();
 
 protected:
-  QLineEdit *drone_editor_;
-  QPushButton *takeoff_button_;
-  QPushButton *land_button_;
-  QPushButton *hover_button_;
-  QPushButton *kill_button_;
+  QLineEdit * drone_editor_;
+  QPushButton * takeoff_button_;
+  QPushButton * land_button_;
+  QPushButton * hover_button_;
+  QPushButton * kill_button_;
 
   QString drone_namespace_;
 
@@ -112,6 +115,6 @@ protected:
   std::shared_ptr<as2::motionReferenceHandlers::HoverMotion> hover_handler_;
 };
 
-} // namespace as2_rviz_plugins
+}  // namespace as2_rviz_plugins
 
-#endif // TELEOP_PANEL_HPP_
+#endif  // TELEOP_PANEL_HPP_
